@@ -1,0 +1,44 @@
+{
+  "statement":
+  {
+    "vardecl" : "type=expression name=identifier '=' value=expression ';'"
+	"fndecl" : "[virtual='virtual'] [public='public'] [static='static'] returntype=expression name=identifier '(' args=arglist ')' '{' body=expression '}'",
+	"expression": "expression",
+  }
+
+  "expression":
+  {
+    "fncall" : "fnname=identifier '(' args=commalist ')'",
+    "methodcall" : "object=expression '.' method=identifier '(' args=commalist ')'",
+	"parentheses" : "'(' body=expression ')'"
+	"array" : "'[' body=commalist ']'"
+	"arrayindex" : "expression '[' commalist ']'"
+	"opexpression": "opexpression"
+  }
+
+  "leafnode" :
+  {
+    "number" : "number"
+	"identifier" : "identifier"
+  }
+
+  "opexpression" :
+  {
+    "operators": [
+      "- infix prefix",
+      "+",
+      "* infix prefix",
+      "/",
+    ]
+	"values": "leafnode"
+  }
+  
+  "commalist" :
+  {
+    "operators": [", infix prefix postfix"]
+	"values": "expression"
+  }
+
+  "argdecllist" : "arg [',' arglist]",
+  "argdecl" : "['in'] ['out'] ['ref'] expression:type identifier:name",  
+}
