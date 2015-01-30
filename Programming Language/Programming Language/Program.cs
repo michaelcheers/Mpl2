@@ -13,8 +13,7 @@ namespace Programming_Language
         }
         static void Main(string[] args)
         {
-            JSONTable compilerSettings = JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Programming_Language.CompilerSettings.json")).ReadToEnd());
-            Compiler c = new Compiler(compilerSettings);
+            Compiler c = Compiler.Create();
 
             c.Tokenize("1+1*0");
             Console.Write(String.Join("\r\n", c.tokens.ConvertAll(ConvertToString)));

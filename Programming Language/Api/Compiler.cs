@@ -64,7 +64,7 @@ namespace Programming_Language
         }
     }
 
-    partial class Compiler
+    public partial class Compiler
     {
 //        public static string[] operators = new string [] { ",", "+", "-", "=", "/", "<", ">", "<<", ">>", "+=", "-=" };
         public List<object> tokens;
@@ -95,8 +95,15 @@ namespace Programming_Language
             }
         }
 
-        public void Compile()
+        public static Compiler Create ()
         {
+            return new Compiler(JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Api.CompilerSettings.json")).ReadToEnd()));
+        }
+
+        public void Compile(string input)
+        {
+            Tokenize(input);
+            Parse(tokens);
         }
     }
 }
