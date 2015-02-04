@@ -64,46 +64,40 @@ namespace Programming_Language
         }
     }
 
-    public partial class Compiler
+    partial class Compiler
     {
 //        public static string[] operators = new string [] { ",", "+", "-", "=", "/", "<", ">", "<<", ">>", "+=", "-=" };
         public List<object> tokens;
         
         List<Operator> operators;
-        Dictionary<Type, List<string>> patterns;
-        JSONTable settings;
+        JSONTable patterns;
+        JSONArray startPattern;
 
-        public Compiler(JSONTable settings)
+        public Compiler(JSONTable patterns)
         {
-            this.settings = settings;
+            this.patterns = patterns;
 
             this.operators = new List<Operator>();
             int precedence = 0;
-            foreach (string s in settings.getArray("operators").asStrings())
+            foreach (string s in patterns.getArray("SYMBOLS").asStrings())
             {
                 operators.Add(new Operator(s, precedence));
                 precedence++;
             }
 
-            this.patterns = new Dictionary<Type, List<string>>();
-            JSONTable patternsTable = settings.getJSON("patterns");
-            foreach (string patternName in patternsTable.Keys)
+            string startPatternName = patterns.getString("START", null);
+            if (startPatternName != null)
             {
-                string pattern = patternsTable.getString(patternName);
-
-                
+                startPattern = patterns.getArray(startPatternName);
+            }
+            else
+            {
+                startPattern = patterns.getArray("START", null);
             }
         }
 
-        public static Compiler Create ()
+        public void Compile()
         {
-            return new Compiler(JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Api.CompilerSettings.json")).ReadToEnd()));
-        }
-
-        public void Compile(string input)
-        {
-            Tokenize(input);
-            Parse(tokens);
         }
     }
 }
