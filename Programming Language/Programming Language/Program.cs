@@ -17,7 +17,7 @@ namespace Programming_Language
             JSONTable compilerSettings = JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Programming_Language.CompilerSettings.json")).ReadToEnd());
             Compiler c = new Compiler(compilerSettings);
 
-            c.Tokenize("hello ( cruel , world )");
+            c.Tokenize("hello(cruel, world)");
             Console.WriteLine("tokens:\n");
             Console.Write(String.Join("\r\n", c.tokens.ConvertAll(ConvertToString)));
 
