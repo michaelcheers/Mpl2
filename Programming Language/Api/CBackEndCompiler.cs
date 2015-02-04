@@ -8,6 +8,9 @@ namespace Api
 {
     partial class Compiler
     {
-
+        public string CompileToC ()
+        {
+            return "";
+        }
     }
 }

@@ -220,6 +220,9 @@ namespace Programming_Language
                     case '-':
                     case '*':
                     case '/':
+                    case '(':
+                    case ')':
+                    case ',':
                         {
                             string result = "";
                             Switch:
@@ -285,6 +288,9 @@ namespace Programming_Language
                                 case '-':
                                 case '*':
                                 case '/':
+                                case '(':
+                                case ')':
+                                case ',':
                                     {
                                         result += enumerator.Current;
                                         if (!enumerator.MoveNext())

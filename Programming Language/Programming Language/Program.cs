@@ -13,14 +13,15 @@ namespace Programming_Language
         }
         static void Main(string[] args)
         {
-            Compiler c = Compiler.Create();
+            JSONTable compilerSettings = JSONTable.parse(MCompiler.Properties.Resources.CompilerSettings);
+            Compiler c = new Compiler(compilerSettings);
 
-            c.Tokenize("1+1*0");
+            c.Tokenize("hello ( cruel , world )");
             Console.Write(String.Join("\r\n", c.tokens.ConvertAll(ConvertToString)));
 
             Expression exp = c.Parse(c.tokens);
 
-
+            Expression fnArgs = exp["fncall"]["args"];
 
             while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
         }
