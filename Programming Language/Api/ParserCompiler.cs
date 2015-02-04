@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Api;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,21 @@ namespace Api
 {
     public class Expression
     {
+        public override string ToString()
+        {
+            return (childrenByName.ConvertToString(ToString, ToString));
+        }
+
+        private static string ToString(string input)
+        {
+            return input;
+        }
+
+        private static string ToString(Expression input)
+        {
+            return input.ToString();
+        }
+
         public string name;
         public readonly List<Expression> children;
         public Dictionary<string, Expression> childrenByName;
@@ -155,6 +171,8 @@ namespace Api
 
     partial class Compiler
     {
+        public Expression parseTokens;
+
         // ANY pattern*
         // SEQUENCE pattern*
         // LITERAL string
@@ -163,7 +181,12 @@ namespace Api
         // OPERATORS leafnode operator*
         // BIND name pattern
 
-        public Expression Parse(List<object> tokens)
+        public void Parse (List<object> tokens)
+        {
+            parseTokens = ParseBase(tokens);
+        }
+
+        public Expression ParseBase(List<object> tokens)
         {
             //JSONTable patterns = settings.getJSON("patterns");
             int index = 0;

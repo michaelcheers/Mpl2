@@ -40,9 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CBackEndCompiler.cs" />
-    <Compile Include="Class1.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="EnumeratorReader.cs" />
+    <Compile Include="GenericScope.cs" />
     <Compile Include="JSONTable.cs" />
     <Compile Include="ParserCompiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

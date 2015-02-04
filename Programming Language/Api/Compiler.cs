@@ -64,7 +64,7 @@ namespace Api
         }
     }
 
-    partial class Compiler
+    public partial class Compiler
     {
 //        public static string[] operators = new string [] { ",", "+", "-", "=", "/", "<", ">", "<<", ">>", "+=", "-=" };
         public List<object> tokens;
@@ -96,8 +96,16 @@ namespace Api
             }
         }
 
-        public void Compile()
+        /// <summary>
+        /// Compiles the code and returns c.
+        /// </summary>
+        /// <param name="input">The code to compile.</param>
+        /// <returns>The c code that was compiled.</returns>
+        public string Compile(string input)
         {
+            Tokenize(input);
+            Parse(tokens);
+            return CompileToC(parseTokens);
         }
     }
 }

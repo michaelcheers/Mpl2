@@ -8,7 +8,7 @@ namespace Api
 {
     partial class Compiler
     {
-        public string CompileToC ()
+        public string CompileToC (Expression exp)
         {
             return "";
         }

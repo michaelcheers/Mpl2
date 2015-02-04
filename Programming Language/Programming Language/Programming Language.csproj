@@ -50,15 +50,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CompilerSettings.json" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Api\Api.csproj">
       <Project>{204d9573-d2a1-418f-b462-4563bf154307}</Project>
       <Name>Api</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\Api\CompilerSettings.json">
+      <Link>CompilerSettings.json</Link>
+    </EmbeddedResource>
     <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

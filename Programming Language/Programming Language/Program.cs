@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Programming_Language
 {
-    class Program
+    static class Program
     {
         static string ConvertToString(object input)
         {
@@ -18,11 +18,14 @@ namespace Programming_Language
             Compiler c = new Compiler(compilerSettings);
 
             c.Tokenize("hello ( cruel , world )");
+            Console.WriteLine("tokens:\n");
             Console.Write(String.Join("\r\n", c.tokens.ConvertAll(ConvertToString)));
 
-            Expression exp = c.Parse(c.tokens);
+            c.Parse(c.tokens);
 
-            Expression fnArgs = exp["fncall"]["args"];
+            //Console.WriteLine("Parse Tokens:\n");
+            //Console.Write(c.parseTokens);
+            Expression fnArgs = c.parseTokens["fncall"]["args"];
 
             while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
         }
