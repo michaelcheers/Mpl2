@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Api;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace Programming_Language
         }
         static void Main(string[] args)
         {
-            JSONTable compilerSettings = JSONTable.parse(MCompiler.Properties.Resources.CompilerSettings);
+            JSONTable compilerSettings = JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Programming_Language.CompilerSettings.json")).ReadToEnd());
             Compiler c = new Compiler(compilerSettings);
 
             c.Tokenize("hello ( cruel , world )");
