@@ -1,20 +1,92 @@
 {
-  "statement":
-  {
-    "vardecl" : "type=expression name=identifier '=' value=expression ';'"
-	"fndecl" : "[virtual='virtual'] [public='public'] [static='static'] returntype=expression name=identifier '(' args=arglist ')' '{' body=expression '}'",
-	"expression": "expression",
-  }
+  "START": "expression",
+  "SYMBOLS": [],//"hello", "world"],
 
   "expression":
-  {
-    "fncall" : "fnname=identifier '(' args=commalist ')'",
+  [
+    "ANY",
+	["BIND", "fncall",
+      [
+	    "SEQUENCE",
+	    ["BIND", "name", ["IDENTIFIER"]],
+	    ["LITERAL", "("],
+	    "arglist",
+	    ["LITERAL", ")"],
+	  ]
+	],
+	["BIND", "operators", ["OPERATORS"]],
+  ],
+
+  "arglist":
+  ["OPTION", ["SEQUENCE",
+	["BIND", "*args", "expression"],
+	["MULTI", ["SEQUENCE", ["LITERAL", ","], ["BIND", "*args", "expression"]]],
+  ]],
+
+/*  "statement":
+  [
+    "ANY",
+    "vardecl",
+	"fndecl",
+	"expression",
+  ],
+  
+  "vardecl":
+  [
+    "SEQUENCE",
+    "expression",
+	"identifier",
+	["LITERAL", "="],
+	"expression",
+	["LITERAL", ";"],
+  ],
+
+  "fndecl":
+  [
+    "SEQUENCE",
+	["BIND", "virtual", ["OPTION", ["LITERAL", "virtual"]]],
+	["BIND", "public", ["OPTION", ["LITERAL", "public"]]],
+	["BIND", "static", ["OPTION", ["LITERAL", "static"]]],
+    ["BIND", "returntype", "expression"],
+	["BIND", "functionname", "identifier"],
+	["LITERAL", "("],
+	["BIND", "args", "arglist"],
+	["LITERAL", ")"],
+	["LITERAL", "{"],
+	["BIND", "body", "expression"],
+	["LITERAL", "}"],
+  ],
+
+  "expression":
+  [
+    "ANY",
+	"fncall",
     "methodcall" : "object=expression '.' method=identifier '(' args=commalist ')'",
 	"parentheses" : "'(' body=expression ')'"
 	"array" : "'[' body=commalist ']'"
 	"arrayindex" : "expression '[' commalist ']'"
 	"opexpression": "opexpression"
-  }
+  ]
+
+  "fncall":
+  [
+    ["BIND", "fnname", "expression"],
+	["LITERAL", "("],
+	["BIND", "args", ["OPTION", "commalist"]],
+	["LITERAL", ")"],
+  ]
+
+  "commalist":
+  [
+    "ANY",
+	["BIND[]", "expressions", "expression"],
+	[
+      "SEQUENCE",
+	  ["BIND[]", "expressions", "expression"],
+	  ["LITERAL", ","],
+	  "commalist",
+	],
+  ]
 
   "leafnode" :
   {
@@ -41,4 +113,5 @@
 
   "argdecllist" : "arg [',' arglist]",
   "argdecl" : "['in'] ['out'] ['ref'] expression:type identifier:name",  
+  */
 }
