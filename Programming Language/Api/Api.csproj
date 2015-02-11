@@ -43,13 +43,18 @@
     <Compile Include="Compiler.cs" />
     <Compile Include="EnumeratorReader.cs" />
     <Compile Include="GenericScope.cs" />
-    <Compile Include="JSONTable.cs" />
     <Compile Include="ParserCompiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TokenizerCompiler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CompilerSettings.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Dropbox\Michael and Samuel\USB Recovery\Private\Visual Studio 2013\Projects\Json Library\Json Library\Json Library.csproj">
+      <Project>{5845e0b3-bddd-465c-a4a7-1fb75d51c736}</Project>
+      <Name>Json Library</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

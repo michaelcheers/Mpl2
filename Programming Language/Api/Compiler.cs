@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Json_Reader;
 
 namespace Api
 {
@@ -72,6 +73,11 @@ namespace Api
         List<Operator> operators;
         JSONTable patterns;
         JSONArray startPattern;
+
+        public Compiler () : this (JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Api.CompilerSettings.json")).ReadToEnd()))
+        {
+
+        }
 
         public Compiler(JSONTable patterns)
         {

@@ -50,6 +50,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Dropbox\Michael and Samuel\USB Recovery\Private\Visual Studio 2013\Projects\Json Library\Json Library\Json Library.csproj">
+      <Project>{5845e0b3-bddd-465c-a4a7-1fb75d51c736}</Project>
+      <Name>Json Library</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Api\Api.csproj">
       <Project>{204d9573-d2a1-418f-b462-4563bf154307}</Project>
       <Name>Api</Name>
