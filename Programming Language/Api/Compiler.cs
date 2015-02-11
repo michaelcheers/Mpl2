@@ -71,34 +71,38 @@ namespace Api
         public List<object> tokens;
         
         List<Operator> operators;
-        JSONTable patterns;
+        JSONTable settings;
         JSONArray startPattern;
-
+        HashSet<char> symbols = new HashSet<char>();
         public Compiler () : this (JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Api.CompilerSettings.json")).ReadToEnd()))
         {
 
         }
 
-        public Compiler(JSONTable patterns)
+        public Compiler(JSONTable settings)
         {
-            this.patterns = patterns;
+            this.settings = settings;
 
             this.operators = new List<Operator>();
             int precedence = 0;
-            foreach (string s in patterns.getArray("SYMBOLS").asStrings())
+            foreach (string s in settings.getArray("OPERATORS").asStrings())
             {
+                foreach (char c in s)
+                {
+                    symbols.Add(c);
+                }
                 operators.Add(new Operator(s, precedence));
                 precedence++;
             }
 
-            string startPatternName = patterns.getString("START", null);
+            string startPatternName = settings.getString("START", null);
             if (startPatternName != null)
             {
-                startPattern = patterns.getArray(startPatternName);
+                startPattern = settings.getArray(startPatternName);
             }
             else
             {
-                startPattern = patterns.getArray("START", null);
+                startPattern = settings.getArray("START", null);
             }
         }
 

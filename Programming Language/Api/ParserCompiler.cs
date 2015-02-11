@@ -208,7 +208,7 @@ namespace Api
             System.Object patternObject = parent.getProperty(index);
             if (patternObject is string)
             {
-                return patterns.getArray((string)patternObject);
+                return settings.getArray((string)patternObject);
             }
             else
             {
