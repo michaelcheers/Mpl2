@@ -23,6 +23,19 @@
 	["MULTI", ["SEQUENCE", ["LITERAL", ","], ["BIND", "*args", "expression"]]],
   ]],
 
+  "operators":
+  [
+    "L ( expression )",
+	"( expression ) R",
+	"L [ expression ]",
+	"- R",
+    "L - R",
+    "L + R",
+	"* R",
+    "L * R",
+    "L / R",
+  ]
+
 /*  "statement":
   [
     "ANY",

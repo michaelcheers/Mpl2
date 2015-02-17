@@ -102,7 +102,7 @@ namespace Api
         public readonly static Expression ValidEmpty = new Expression();
     }
 
-    public class Expression_Literal: Expression
+    public class Expression_Literal : Expression
     {
         public readonly object value;
 
@@ -122,11 +122,11 @@ namespace Api
         }
     }
 
-    public class Expression_Operator: Expression
+    public class Expression_Operator : Expression
     {
         public readonly Operator operatorType;
 
-        public Expression_Operator(Expression lhs, Operator operatorType, Expression rhs): base(new List<Expression>(){lhs, rhs})
+        public Expression_Operator(Expression lhs, Operator operatorType, Expression rhs) : base(new List<Expression>() { lhs, rhs })
         {
             this.operatorType = operatorType;
 
@@ -150,17 +150,17 @@ namespace Api
 
         public Expression lhs
         {
-            get{ return children[0]; }
-            set{ children[0] = value; }
+            get { return children[0]; }
+            set { children[0] = value; }
         }
         public Expression rhs
         {
-            get{ return children[1]; }
-            set{ children[1] = value; }
+            get { return children[1]; }
+            set { children[1] = value; }
         }
     }
 
-    public class Expression_MultiBind: Expression
+    public class Expression_MultiBind : Expression
     {
         public readonly List<Expression> binding = new List<Expression>();
 
@@ -170,198 +170,290 @@ namespace Api
         }
     }
 
-    partial class Compiler
+    public class PatternScope
     {
-        public Expression parseTokens;
+        JSONTable scope;
+        Dictionary<string, Pattern> elements;
 
-        // ANY pattern*
-        // SEQUENCE pattern*
-        // LITERAL string
-        // OPTION pattern
-        // MULTI pattern
-        // OPERATORS leafnode operator*
-        // BIND name pattern
-
-        public void Parse (List<object> tokens)
+        public PatternScope(JSONTable scope)
         {
-            parseTokens = ParseBase(tokens);
+            this.scope = scope;
+            this.elements = new Dictionary<string, Pattern>();
         }
 
-        public Expression ParseBase(List<object> tokens)
+        public Pattern getPattern(string name)
         {
-            //JSONTable patterns = settings.getJSON("patterns");
-            int index = 0;
-            //return ParseLevel(null, null, tokens, ref index);
-            Expression result = ParsePattern(startPattern, tokens, ref index);
-            if (index < tokens.Count)
+            if (elements.ContainsKey(name))
+            {
+                return elements[name];
+            }
+            else
+            {
+                Pattern result = toPattern(scope.getArray(name));
+                elements[name] = result;
+                return result;
+            }
+        }
+
+        public Pattern getPattern(JSONArray array, int index)
+        {
+            System.Object obj = array[index];
+            if (obj is string)
+            {
+                return getPattern((string)obj);
+            }
+            else if (obj is System.Object[])
+            {
+                return toPattern(new JSONArray((System.Object[])obj));
+            }
+            else
             {
                 return null;
             }
-            else
+        }
+
+        public Pattern toPattern(JSONArray template)
+        {
+            switch (template.getString(0))
             {
-                return new Expression(new List<Expression>(){result});
+                case "ANY": return new Pattern_Any(template, this);
+                case "SEQUENCE": return new Pattern_Sequence(template, this);
+                case "LITERAL": return new Pattern_Literal(template, this);
+                case "IDENTIFIER": return new Pattern_Identifier(template, this);
+                case "BIND": return new Pattern_Bind(template, this);
+                case "OPTION": return new Pattern_Optional(template, this);
+                case "MULTI": return new Pattern_Multi(template, this);
+                case "OPERATORS": return new Pattern_Operators(template, this);
+                default:
+                    //ReportError();
+                    return null;
+            }
+        }
+    }
+
+    public interface Pattern
+    {
+        Expression Parse(List<object> tokens, ref int index);
+    }
+
+    class Pattern_Any : Pattern
+    {
+        PatternScope scope;
+        JSONArray template;
+        List<Pattern> options;
+
+        public Pattern_Any(JSONArray template, PatternScope scope)
+        {
+            this.scope = scope;
+            this.template = template;
+        }
+
+        private void PopulateOptions()
+        {
+            if (this.options != null)
+                return;
+
+            this.options = new List<Pattern>();
+            for ( int Idx = 1; Idx < template.Length; ++Idx )
+            {
+                options.Add(scope.getPattern(template, Idx));
             }
         }
 
-        public JSONArray GetPattern(JSONArray parent, int index)
+        public Expression Parse(List<object> tokens, ref int index)
         {
-            System.Object patternObject = parent.getProperty(index);
-            if (patternObject is string)
+            PopulateOptions();
+            foreach(Pattern p in options)
             {
-                return settings.getArray((string)patternObject);
-            }
-            else
-            {
-                return new JSONArray((System.Object[])patternObject);
-            }
-        }
-
-        public Expression ParsePattern(JSONArray pattern, List<object> tokens, ref int index)
-        {
-            switch (pattern.getString(0))
-            {
-                case "ANY":
-                    {
-                        for( int Idx = 1; Idx < pattern.Length; ++Idx )
-                        {
-                            JSONArray patternElement = GetPattern(pattern, Idx);
-                            int subIndex = index;
-                            Expression subExpression = ParsePattern(patternElement, tokens, ref subIndex);
-                            if( subExpression != null )
-                            {
-                                index = subIndex;
-                                return subExpression;
-                            }
-                        }
-
-                        return null;
-                    }
-                
-                case "SEQUENCE":
-                    {
-                        int subIndex = index;
-                        List<Expression> resultList = new List<Expression>();
-                        for( int Idx = 1; Idx < pattern.Length; ++Idx )
-                        {
-                            JSONArray patternElement = GetPattern(pattern, Idx);
-                            Expression subExpression = ParsePattern(patternElement, tokens, ref subIndex);
-                            if( subExpression == null )
-                            {
-                                return null;
-                            }
-                            else
-                            {
-                                resultList.Add(subExpression);
-                            }
-                        }
-                        index = subIndex;
-                        return new Expression(resultList);
-                    }
-                
-                case "LITERAL":
-                    {
-                        string literal = pattern.getString(1);
-                        object token = tokens[index];
-                        bool match = false;
-
-                        if( token is Identifier && literal == ((Identifier)token).Internal)
-                        {
-                            match = true;
-                        }
-
-                        if( match )
-                        {
-                            index++;
-                            return new Expression_Literal(literal);
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-
-                case "IDENTIFIER":
-                    {
-                        object token = tokens[index];
-
-                        if (token is Identifier)
-                        {
-                            index++;
-                            return new Expression_Identifier(token.ToString());
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-
-                case "MULTI":
-                    {
-                        List<Expression> resultList = new List<Expression>();
-                        JSONArray elementPattern = GetPattern(pattern, 1);
-                        while(true)
-                        {
-                            Expression result = ParsePattern(elementPattern, tokens, ref index);
-                            if (result != null)
-                            {
-                                resultList.Add(result);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                        return new Expression(resultList);
-                    }
-
-                case "OPTION":
-                    {
-                        JSONArray patternElement = GetPattern(pattern, 1);
-                        int subIndex = index;
-                        Expression result = ParsePattern(patternElement, tokens, ref subIndex);
-                        if (result != null)
-                        {
-                            index = subIndex;
-                            return result;
-                        }
-                        else
-                        {
-                            return new Expression();
-                        }
-                   }
-
-                case "OPERATORS":
-                    {
-                        int subIndex = index;
-                        Expression result = ParseLevel(null, null, tokens, ref subIndex);
-                        if( result != null )
-                        {
-                            index = subIndex;
-                            return result;
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-
-                case "BIND":
-                    {
-                        string bindName = pattern.getString(1);
-                        JSONArray patternElement = GetPattern(pattern, 2);
-                        int subIndex = index;
-                        Expression subExpression = ParsePattern(patternElement, tokens, ref subIndex);
-                        if( subExpression != null )
-                        {
-                            index = subIndex;
-                            subExpression.name = bindName;
-                        }
-
-                        return subExpression;
-                    }
+                int subIndex = index;
+                Expression subExpression = p.Parse(tokens, ref subIndex);
+                if (subExpression != null)
+                {
+                    index = subIndex;
+                    return subExpression;
+                }
             }
 
             return null;
+        }
+    }
+
+    class Pattern_Sequence : Pattern
+    {
+        PatternScope scope;
+        JSONArray template;
+        List<Pattern> sequence;
+
+        public Pattern_Sequence(JSONArray template, PatternScope scope)
+        {
+            this.template = template;
+            this.scope = scope;
+        }
+
+        private void PopulateSequence()
+        {
+            if (this.sequence != null)
+                return;
+
+            this.sequence = new List<Pattern>();
+            for (int Idx = 1; Idx < template.Length; ++Idx)
+            {
+                sequence.Add(scope.getPattern(template, Idx));
+            }
+        }
+
+        public Expression Parse(List<object> tokens, ref int index)
+        {
+            PopulateSequence();
+
+            int subIndex = index;
+            List<Expression> resultList = new List<Expression>();
+            foreach( Pattern p in sequence )
+            {
+                Expression subExpression = p.Parse(tokens, ref subIndex);
+                if (subExpression == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    resultList.Add(subExpression);
+                }
+            }
+            index = subIndex;
+            return new Expression(resultList);
+        }
+    }
+
+    class Pattern_Literal : Pattern
+    {
+        string literal;
+
+        public Pattern_Literal(JSONArray template, PatternScope scope)
+        {
+            literal = template.getString(1);
+        }
+
+        public Expression Parse(List<object> tokens, ref int index)
+        {
+            object token = tokens[index];
+            bool match = false;
+
+            if (token is Identifier && literal == ((Identifier)token).Internal)
+            {
+                match = true;
+            }
+            else if( token is Operator && literal == ((Operator)token).symbol)
+            {
+                match = true;
+            }
+
+            if (match)
+            {
+                index++;
+                return new Expression_Literal(literal);
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+
+    class Pattern_Identifier : Pattern
+    {
+        public Pattern_Identifier(JSONArray template, PatternScope scope)
+        {
+        }
+
+        public Expression Parse(List<object> tokens, ref int index)
+        {
+            object token = tokens[index];
+
+            if (token is Identifier)
+            {
+                index++;
+                return new Expression_Identifier(token.ToString());
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+
+    class Pattern_Multi : Pattern
+    {
+        Pattern body;
+        public Pattern_Multi(JSONArray template, PatternScope scope)
+        {
+            body = scope.getPattern(template, 1);
+        }
+
+        public Expression Parse(List<object> tokens, ref int index)
+        {
+            List<Expression> resultList = new List<Expression>();
+            while (true)
+            {
+                Expression result = body.Parse(tokens, ref index);
+                if (result != null)
+                {
+                    resultList.Add(result);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return new Expression(resultList);
+        }
+    }
+
+    class Pattern_Optional : Pattern
+    {
+        Pattern body;
+
+        public Pattern_Optional(JSONArray template, PatternScope scope)
+        {
+            body = scope.getPattern(template, 1);
+        }
+
+        public Expression Parse(List<object> tokens, ref int index)
+        {
+            int subIndex = index;
+            Expression result = body.Parse(tokens, ref subIndex);
+            if (result != null)
+            {
+                index = subIndex;
+                return result;
+            }
+            else
+            {
+                return new Expression();
+            }
+        }
+    }
+
+    class Pattern_Operators : Pattern
+    {
+        public Pattern_Operators(JSONArray template, PatternScope scope)
+        {
+            
+        }
+
+       public Expression Parse(List<object> tokens, ref int index)
+        {
+            int subIndex = index;
+            Expression result = ParseLevel(null, null, tokens, ref subIndex);
+            if (result != null)
+            {
+                index = subIndex;
+                return result;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public Expression ParseLevel(Expression lhs, Operator op, List<object> tokens, ref int index)
@@ -444,6 +536,80 @@ namespace Api
                 return rhs;
             else
                 return null;
+        }
+    }
+
+    class Pattern_Bind : Pattern
+    {
+        Pattern body;
+        string bindName;
+
+        public Pattern_Bind(JSONArray template, PatternScope scope)
+        {
+            bindName = template.getString(1);
+            body = scope.getPattern(template, 2);
+        }
+
+        public Expression Parse(List<object> tokens, ref int index)
+        {
+            int subIndex = index;
+            Expression subExpression = body.Parse(tokens, ref subIndex);
+            if (subExpression != null)
+            {
+                index = subIndex;
+                subExpression.name = bindName;
+            }
+
+            return subExpression;
+        }
+    }
+
+    partial class Compiler
+    {
+        public Expression parseTokens;
+
+        // ANY pattern*
+        // SEQUENCE pattern*
+        // LITERAL string
+        // OPTION pattern
+        // MULTI pattern
+        // OPERATORS leafnode operator*
+        // BIND name pattern
+
+        public void Parse (List<object> tokens)
+        {
+            parseTokens = ParseBase(tokens);
+        }
+
+        public Expression ParseBase(List<object> tokens)
+        {
+            int index = 0;
+            string startName = settings.getString("START");
+            PatternScope scope = new PatternScope(settings);
+            Pattern rootPattern = scope.getPattern(startName);
+
+            Expression result = rootPattern.Parse(tokens, ref index);
+            if (index < tokens.Count)
+            {
+                return null;
+            }
+            else
+            {
+                return new Expression(new List<Expression>(){result});
+            }
+        }
+
+        public JSONArray GetPattern(JSONArray parent, int index)
+        {
+            System.Object patternObject = parent.getProperty(index);
+            if (patternObject is string)
+            {
+                return settings.getArray((string)patternObject);
+            }
+            else
+            {
+                return new JSONArray((System.Object[])patternObject);
+            }
         }
 
         /*
