@@ -74,9 +74,20 @@ namespace Api
         JSONTable settings;
         JSONArray startPattern;
         HashSet<char> symbols = new HashSet<char>();
-        public Compiler () : this (JSONTable.parse(new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Api.CompilerSettings.json")).ReadToEnd()))
-        {
 
+        public Compiler()
+            : this( JSONTable.parse( new System.IO.StreamReader(CompilerSettings).ReadToEnd() ) )
+        {
+        }
+
+        public static System.IO.Stream CompilerSettings
+        {
+            get
+            {
+                return
+                    System.Reflection.Assembly.GetExecutingAssembly()
+                        .GetManifestResourceStream("Api.CompilerSettings.json");
+            }
         }
 
         public Compiler(JSONTable settings)
